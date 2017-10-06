@@ -1,18 +1,26 @@
 import math
 
 
+# CONSTANTES:
+G = 6.674e-11  # Constante de gravitation universelle
+M_TERRE = 5.972e15
+
+
 class Modele:
-    def __init__(self, *objets):
-        self.objet_origine = Corps(masse=0)
-        self.objets = objets
-        self.routine()
+    def __init__(self):
         self.fps = 30
-        time_gap = 1/self.fps  # For simulation accuracy
-        self.routine
+        self.corps = []
+        terre = Corps(x=500, y=300, masse=M_TERRE, vitesse=Vecteur(0.0040, -math.pi/2))
+        satellite = Corps(x=300, y=300, masse=M_TERRE/100, corps=terre, vitesse=Vecteur(0.4, math.pi/2))
+        terre.autre_corps = satellite
+
+        self.corps.append(terre)
+        self.corps.append(satellite)
+
 
     def routine(self):
-        for objet in self.objets:
-            pass
+        for corp in self.corps:
+            corp.update()
 
     def afficher(self):
         pass
@@ -37,6 +45,9 @@ class Vecteur:  # 2D
         y = other.y() - self.y()
         return cart_to_pol(x, y)  # Radians
 
+    def distance(self, other):
+        return cart_to_pol(other.x() - self.x(), other.y() - self.y()).norme
+
     def __add__(self, other):
         x = other.x() + self.x()
         y = other.y() + self.y()
@@ -52,12 +63,23 @@ class Vecteur:  # 2D
 
 
 class Corps:
-    def __init__(self, masse=1, diametre=0.1, x=0, y=0):
+    def __init__(self, masse=1, corps=None, x=0, y=0, vitesse=Vecteur(0, 0)):
+        self.autre_corps = corps
         self.masse = masse
-        self.diametre = diametre
+        # Conds initiales
         self.acceleration = Vecteur(0, 0)
-        self.vitesse = Vecteur(0, 0)
+        self.vitesse = vitesse
         self.position = cart_to_pol(x, y)
+
+    def update(self):
+        if self.autre_corps is not None:
+            f1 = G*self.autre_corps.masse/((self.position.distance(self.autre_corps.position))**2)*self.masse
+            f1 /= self.masse
+            direction = self.position.angle_between(self.autre_corps.position)
+            direction.norme = f1*1/10000
+            self.acceleration = direction
+        self.vitesse += self.acceleration
+        self.position += self.vitesse
 
     def self_to_other_vector(self, other):
         return self.position.angle_between(other.position)
@@ -85,12 +107,13 @@ def is_close(a, b, rel_tol=1e-11):
     return dist < rel_tol
 
 if __name__ == "__main__":
-    a = Vecteur(1, math.pi/2)
-    b = Vecteur(math.sqrt(2), math.pi/4)
-    print('ADDITION:', a, b, a+b)
-    c1 = Corps(x=0, y=0)
-    c2 = Corps(x=1, y=-1)
-    print('POS1:', c1.position)
-    print('POS2:', c2.position)
-    #print(c1.self_to_other_vector(c2))
-    #print(c2.self_to_other_vector(c1))
+    terre = Corps(x=100, y=200, masse=M_TERRE)
+    satellite = Corps(x=100, y=0, masse=1, corps=terre)
+    print('Pos1:', satellite.position)
+    print('Vit1', satellite.vitesse)
+    print('Accel1', satellite.acceleration)
+    for a in range(10):
+        satellite.update()
+    print('Pos2:', satellite.position.y())
+    print('Vit2', satellite.vitesse)
+    print('Accel2', satellite.acceleration)
