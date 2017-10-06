@@ -1,4 +1,3 @@
-from fps_master import regulate_fps
 import math
 
 
@@ -9,11 +8,14 @@ class Modele:
         self.routine()
         self.fps = 30
         time_gap = 1/self.fps  # For simulation accuracy
-        regulate_fps(self.routine, fps=self.fps)
+        self.routine
 
     def routine(self):
         for objet in self.objets:
             pass
+
+    def afficher(self):
+        pass
 
 
 class Vecteur:  # 2D
