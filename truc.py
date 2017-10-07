@@ -11,19 +11,19 @@ class Modele:
     def __init__(self):
         self.fps = 30
         self.corps = []
-        terre = Corps(x=0, y=0, masse=M_TERRE, vitesse=Vecteur(0, 0))
-        lune = Corps(x=384400e3, y=0, masse=M_LUNE, corps=terre, vitesse=Vecteur(1000, math.pi/2))
+        terre = Corps(x=384400e3, y=384400e3, masse=M_TERRE, vitesse=Vecteur(0, 0))
+        lune = Corps(x=384400e3*2, y=384400e3, masse=M_LUNE, corps=terre, vitesse=Vecteur(1000, math.pi/2))
         terre.corps = lune
         self.corps.append(lune)
-        self.corps.append(terre)
+        #self.corps.append(terre)
 
-    def routine(self, i, affichage=False):
+    def routine(self, affichage=False):
         coords = []
         for corp in self.corps:
             corp.update()
             if affichage:
-                coords = (corp.position.x(), corp.position.y())
-                print('Coords:', coords)
+                coords = [corp.position.x(), corp.position.y()]
+                #print('Coords:', coords)
         return coords
 
     def afficher(self):
