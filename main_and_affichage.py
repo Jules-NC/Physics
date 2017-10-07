@@ -4,7 +4,7 @@ import time
 
 
 pygame.init()
-screen = pygame.display.set_mode((750, 450))
+screen = pygame.display.set_mode((750, 2050))
 done = False
 
 modele = Modele()
@@ -15,12 +15,14 @@ while not done:
         if event.type == pygame.QUIT:  # Si un de ces événements est de type QUIT
             done = True
     i += 1
-    if i%10000 is 0:
-        c = modele.routine(True)
-        c[0] = int(c[0]/3000000)
-        c[1] = int(c[1]/3000000)
-        print(c)
-        pygame.draw.circle(screen, (0, 0, 255), c, 1, 1)
+    if i%1000 is 0:
+        a = modele.routine(True)
+        for c in a:
+            c[0] = int(c[0]/3000000)
+            c[1] = int(c[1]/3000000)
+            pygame.draw.circle(screen, (0, 0, 255), c, 1, 1)
+
+        print(a)
         pygame.display.flip()
     c = modele.routine(False)
 

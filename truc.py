@@ -3,6 +3,7 @@ import math
 
 # CONSTANTES:
 G = 6.674e-11  # Constante de gravitation universelle
+M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
 
@@ -11,18 +12,21 @@ class Modele:
     def __init__(self):
         self.fps = 30
         self.corps = []
-        terre = Corps(x=384400e3, y=384400e3, masse=M_TERRE, vitesse=Vecteur(0, 0))
-        lune = Corps(x=384400e3*2, y=384400e3, masse=M_LUNE, corps=terre, vitesse=Vecteur(1000, math.pi/2))
-        terre.corps = lune
+        terre = Corps(x=384400e3, y=384400e3*2, masse=M_TERRE*100, vitesse=Vecteur(120, math.pi/2))
+        lune = Corps(x=384400e3*2, y=384400e3*2, masse=M_LUNE, vitesse=Vecteur(5980+120, math.pi/2))
+
+        lune.influences.append(terre)
+        terre.influences.append(lune)
+
         self.corps.append(lune)
-        #self.corps.append(terre)
+        self.corps.append(terre)
 
     def routine(self, affichage=False):
         coords = []
         for corp in self.corps:
             corp.update()
             if affichage:
-                coords = [corp.position.x(), corp.position.y()]
+                coords.append([corp.position.x(), corp.position.y()])
                 #print('Coords:', coords)
         return coords
 
@@ -67,8 +71,8 @@ class Vecteur:  # 2D
 
 
 class Corps:
-    def __init__(self, masse=1, corps=None, x=0, y=0, vitesse=Vecteur(0, 0)):
-        self.corps = corps
+    def __init__(self, masse=1, x=0, y=0, vitesse=Vecteur(0, 0)):
+        self.influences = []
         self.masse = masse
         # Conds initiales
         self.acceleration = Vecteur(0, 0)
@@ -76,11 +80,11 @@ class Corps:
         self.position = cart_to_pol(x, y)
 
     def update(self):
-        if self.corps is not None:
-            f1 = G*self.corps.masse / ((self.position.distance(self.corps.position)) ** 2) * self.masse
+        for influence in self.influences:
+            f1 = G*influence.masse / ((self.position.distance(influence.position)) ** 2) * self.masse
             f1 /= self.masse
-            direction = self.position.angle_between(self.corps.position)
-            direction.norme = f1
+            direction = self.position.angle_between(influence.position)
+            direction.norme = f1*1
             self.acceleration = direction
         self.vitesse += self.acceleration
         self.position += self.vitesse
