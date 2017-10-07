@@ -3,21 +3,27 @@ import pygame
 import time
 
 
-pygame.init()
-screen = pygame.display.set_mode((1300, 1200))
+#pygame.init()
+#screen = pygame.display.set_mode((750, 450))
 done = False
 
 modele = Modele()
-while not done:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-    modele.routine()
-    #screen.fill((0, 0, 0))
-    x_et_ys = []
-    for corp in modele.corps:
-        x = corp.position.x()
-        y = corp.position.y()
-        pygame.draw.circle(screen, (0, 128, 255), (int(x), int(y)), 1, 1)
+i = 0
+points = []
+with open('record', 'w') as f:
+    while not done:
+        if i%1000 is 0:
+            points.append(modele.routine(i, affichage=True))
+            print(str(points) + '\n')
+            print(points[-1])
+            print(i/1000000*100, '%')
+        if i == 1000000:
+            break
+        modele.routine(False)
+        i += 1
 
-    pygame.display.flip()
+import numpy as np
+print(points)
+import matplotlib.pyplot as plt
+plt.scatter(*zip(*points))
+plt.show()
