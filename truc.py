@@ -6,6 +6,7 @@ G = 6.674e-11  # Constante de gravitation universelle
 M_TERRE = 5.972e15
 
 
+
 class Modele:
     def __init__(self):
         self.fps = 30
