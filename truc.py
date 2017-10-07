@@ -7,7 +7,6 @@ M_TERRE = 5.972e24
 M_LUNE = 7.342e22
 
 
-
 class Modele:
     def __init__(self):
         self.fps = 30
