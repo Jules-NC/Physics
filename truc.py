@@ -12,8 +12,8 @@ class Modele:
     def __init__(self):
         self.fps = 30
         self.corps = []
-        terre = Corps(x=384400e3, y=384400e3*2, masse=M_TERRE, vitesse=Vecteur(120, math.pi/2))
-        lune = Corps(x=384400e3*1.5, y=384400e3*2, masse=M_LUNE, vitesse=Vecteur(980+120, math.pi/2))
+        terre = Corps(x=384400e3, y=384400e3*2, masse=M_TERRE, vitesse=Vecteur(0, math.pi/2))
+        lune = Corps(x=384400e3*1.5, y=384400e3*2, masse=M_LUNE, vitesse=Vecteur(980, math.pi/2))
 
         lune.influences.append(terre)
         terre.influences.append(lune)
