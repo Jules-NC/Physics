@@ -6,7 +6,7 @@ G = 3.674e-2  # Constante de gravitation universelle
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
-H = .1
+H = 0.2
 
 
 class Modele:
@@ -14,11 +14,15 @@ class Modele:
         self.fps = 30
         self.corps = []
         terre = Corps(x=300, y=400, masse=100000, vitesse=Vecteur(-0.00, math.pi/2))
-        lune = Corps(x=400, y=400, masse=1000, vitesse=Vecteur(6.06, math.pi/2))
+        terre2 = Corps(x=600, y=400, masse=100000, vitesse=Vecteur(3.00, -math.pi/2))
+        lune = Corps(x=400, y=400, masse=1000, vitesse=Vecteur(6.06, -math.pi/2))
         new_horizon = Corps(x=350, y=486.6, masse=10, vitesse=Vecteur(6.06, 5*math.pi/6))
-        # new_horizon = Corps(x=350, y=313.14, masse=10, vitesse=Vecteur(6.06, -5*math.pi/6))
+        new_horizon2 = Corps(x=200, y=400, masse=10, vitesse=Vecteur(6.06, math.pi/2))
+        new_horizon = Corps(x=350, y=313.14, masse=10, vitesse=Vecteur(6.06, -5*math.pi/6))
 
         self.corps.append(new_horizon)
+        self.corps.append(new_horizon2)
+        #self.corps.append(terre2)
         self.corps.append(lune)
         self.corps.append(terre)
         self.liaisons()
