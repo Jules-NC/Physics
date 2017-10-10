@@ -6,29 +6,28 @@ G = 3.674e-2  # Constante de gravitation universelle
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
-H = 6.0
+H = .1
+
 
 class Modele:
     def __init__(self):
         self.fps = 30
         self.corps = []
-        terre = Corps(x=300, y=400, masse=100000, vitesse=Vecteur(0.06, -math.pi/2))
+        terre = Corps(x=300, y=400, masse=100000, vitesse=Vecteur(-0.00, math.pi/2))
         lune = Corps(x=400, y=400, masse=1000, vitesse=Vecteur(6.06, math.pi/2))
         new_horizon = Corps(x=350, y=486.6, masse=10, vitesse=Vecteur(6.06, 5*math.pi/6))
-        #new_horizon = Corps(x=350, y=313.14, masse=10, vitesse=Vecteur(6.06, -5*math.pi/6))
-
-        lune.influences.append(terre)
-        lune.influences.append(new_horizon)
-
-        terre.influences.append(lune)
-        terre.influences.append(new_horizon)
-
-        new_horizon.influences.append(terre)
-        new_horizon.influences.append(lune)
+        # new_horizon = Corps(x=350, y=313.14, masse=10, vitesse=Vecteur(6.06, -5*math.pi/6))
 
         self.corps.append(new_horizon)
         self.corps.append(lune)
         self.corps.append(terre)
+        self.liaisons()
+
+    def liaisons(self):
+        for corp in self.corps:
+            corps_a_ajouter = [cp for cp in self.corps if cp is not corp]
+            for cp in corps_a_ajouter:
+                corp.influences.append(cp)
 
     def routine(self, affichage=False):
         coords = []
@@ -40,8 +39,9 @@ class Modele:
                 #print('Coords:', coords)
         return coords
 
-    def afficher(self):
-        pass
+    def move(self, direction):
+        for corp in self.corps:
+            corp.position += direction
 
 
 class Vecteur:  # 2D
