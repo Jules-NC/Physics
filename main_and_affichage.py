@@ -1,5 +1,5 @@
-from pycallgraph.output import GraphvizOutput
-from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
+# from pycallgraph import PyCallGraph
 from mecanique_classique import *
 import pygame
 import random
