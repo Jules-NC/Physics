@@ -11,7 +11,7 @@ pygame.display.set_caption('ORBITER 42: Space = See orbits | zqsd = moving | i,o
 DONE = False  # Boucle de simulation
 DRAW = True  # Affichage des lignes
 HOMOTETIE = 1
-PAS = 1.5  # DE combien je me déplace
+PAS = 8.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
 MAX_I = 1000e10
 
@@ -51,9 +51,9 @@ def main():
         if keys[pygame.K_d]:
             modele.move(Vecteur(DEPLACEMENT, 0))
         if keys[pygame.K_i]:
-            HOMOTETIE /= 1.006
+            HOMOTETIE /= 1.02
         if keys[pygame.K_o]:
-            HOMOTETIE *= 1.006
+            HOMOTETIE *= 1.02
 
         DEPLACEMENT = PAS * HOMOTETIE
 
