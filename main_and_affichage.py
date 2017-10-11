@@ -13,7 +13,7 @@ DRAW = True  # Affichage des lignes
 HOMOTETIE = 1
 PAS = 1.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
-MAX_I = 1000
+MAX_I = 1000e10
 
 modele = Modele()
 REFERENT = modele.corps[0]
@@ -62,8 +62,8 @@ def main():
     # ===========================================================================================
 
         i += 1
-        if i%100 is 0:
-            a = modele.routine(True)
+        if i%1 is 0:
+            a = [[corp.position.x, corp.position.y] for corp in modele.corps]
             j = 0
             for c in a:
                 c[0] = int(c[0]/abs(HOMOTETIE))
@@ -74,8 +74,8 @@ def main():
             print('i: ', i)
             pygame.display.flip()
             time.sleep(0.0)
-        c = modele.routine(False)
+        c = modele.routine()
 
 if __name__ == '__main__':
-    with PyCallGraph(output=GraphvizOutput()):
-        main()
+    #with PyCallGraph(output=GraphvizOutput()):
+    main()

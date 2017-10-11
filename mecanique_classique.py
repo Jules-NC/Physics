@@ -1,8 +1,9 @@
+import concurrent.futures
 import random
 import math
 
 # CONSTANTES:
-G = 3.674e-2  # Constante de gravitation universelle
+G = 3.674e-2  # Constante de gravitation de moi
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
@@ -11,7 +12,8 @@ H = 0.1
 
 class Modele:
     def __init__(self):
-        self.corps = [Corps(x=random.randint(0, 500), y=random.randint(0, 500), masse=1000) for a in range(20)]
+        self.corps = [Corps(x=random.randint(0, 500), y=random.randint(0, 500), masse=random.randint(1000, 1000)) for a
+            in range(50)]
         self.liaisons()
 
     def liaisons(self):
@@ -20,15 +22,14 @@ class Modele:
             for cp in corps_a_ajouter:
                 corp.influences.append(cp)
 
-    def routine(self, affichage=False):
-        coords = []
+    def routine(self):
+        function = self.corps[0].update
+        corps = [corp for corp in self.corps]
+        with concurrent.futures.ProcessPoolExecutor(max_workers=50) as executor:
+            executor.map(function, corps)
+
         for corp in self.corps:
             corp.update()
-            #print(corp.position.y())
-            if affichage:
-                coords.append([corp.position.x, corp.position.y])
-                #print('Coords:', coords)
-        return coords
 
     def move(self, direction):
         for corp in self.corps:
@@ -80,7 +81,7 @@ class Corps:
     def acceleration(self):
         acceleration = Vecteur(0, 0)
         for influence in self.influences:
-            if self.position.distance(influence.position) <= 4:  # OVERFLOW ACCELERATION
+            if self.position.distance(influence.position) <= 0.001:  # OVERFLOW ACCELERATION
                 return Vecteur(0, 0)
             f1 = G*influence.masse / ((self.position.distance(influence.position)) ** 2) * self.masse
             f1 /= self.masse
