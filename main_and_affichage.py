@@ -11,9 +11,9 @@ pygame.display.set_caption('ORBITER 42: Space = See orbits | zqsd = moving | i,o
 DONE = False  # Boucle de simulation
 DRAW = True  # Affichage des lignes
 HOMOTETIE = 1
-PAS = 8.5  # DE combien je me déplace
+PAS = 2.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
-MAX_I = 1000e10
+MAX_I = 1e10
 
 modele = Modele()
 REFERENT = modele.corps[0]
@@ -51,9 +51,9 @@ def main():
         if keys[pygame.K_d]:
             modele.move(Vecteur(DEPLACEMENT, 0))
         if keys[pygame.K_i]:
-            HOMOTETIE /= 1.02
+            HOMOTETIE /= 1.009
         if keys[pygame.K_o]:
-            HOMOTETIE *= 1.02
+            HOMOTETIE *= 1.009
 
         DEPLACEMENT = PAS * HOMOTETIE
 
@@ -62,20 +62,23 @@ def main():
     # ===========================================================================================
 
         i += 1
-        if i%1 is 0:
-            a = [[corp.position.x, corp.position.y] for corp in modele.corps]
+        if i%10 is 0:
+            p = [[corp.position.x, corp.position.y] for corp in modele.corps]
+            v = [[corp.vitesse.x, corp.vitesse.y] for corp in modele.corps]
             j = 0
-            for c in a:
+            for c in p:
                 c[0] = int(c[0]/abs(HOMOTETIE))
                 c[1] = int(c[1]/abs(HOMOTETIE))
                 pygame.draw.circle(screen, COLORS[j], c, 1, 1)
                 j += 1
-            #print(a)
+            # print(a)
             print('i: ', i)
+            print('   |P:', p)
+            #print('   |V:', v)
             pygame.display.flip()
             time.sleep(0.0)
         c = modele.routine()
 
 if __name__ == '__main__':
-    #with PyCallGraph(output=GraphvizOutput()):
+    # with PyCallGraph(output=GraphvizOutput()):
     main()

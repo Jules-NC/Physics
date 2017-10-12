@@ -3,18 +3,17 @@ import concurrent.futures
 import math
 
 # CONSTANTES:
-G = 3.674e-2  # Constante de gravitation de moi
+G = 6.674e-2  # Constante de gravitation de moi
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
 H = 0.1
 
-
 class Modele:
     def __init__(self):
         self.corps = []
-        c1 = Corps(x=300, y=300, masse=10000, vitesse=Vecteur(0, -18))
-        c2 = Corps(x=400, y=300, masse=10000, vitesse=Vecteur(0, 18))
+        c1 = Corps(x=300, y=300, masse=10000, vitesse=Vecteur(0, 0.5))
+        c2 = Corps(x=600, y=300, masse=10000, vitesse=Vecteur(0, -0.5))
 
         self.corps.append(c1)
         self.corps.append(c2)
@@ -27,10 +26,12 @@ class Modele:
                 corp.influences.append(cp)
 
     def routine(self):
-        function = self.corps[0].update
-        corps = [corp for corp in self.corps]
-        with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
-            executor.map(function, corps)
+        # function = self.corps[0].update
+        # corps = [corp for corp in self.corps]
+        # with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        #     executor.map(function, corps)
+        for corp in self.corps:
+            corp.update()
 
         for corp in self.corps:
             corp.update()
@@ -46,16 +47,11 @@ class Vecteur:  # 2D
         self.y = y
 
     def angle_between(self, other):
-        x = other.x - self.x
-        y = other.y - self.y
-        a = x*y
-        b = math.sqrt(((other.x-self.x)**2)*((other.y-self.y)**2))
-        if b == 0:
-            b = 1e-10
-        return a/b
+        return math.atan2(other.y, other.x) - math.atan2(self.y, self.x)
 
     def distance(self, other):
-        return math.sqrt((other.x - self.x)**2+(other.y-self.y)**2)
+        distance = math.sqrt((other.x - self.x)**2+(other.y-self.y)**2)
+        return distance
 
     def norme(self):
         return math.sqrt(self.x**2+self.y**2)
@@ -75,7 +71,7 @@ class Vecteur:  # 2D
 
 
 class Corps:
-    def __init__(self, masse=1, x=0, y=0, vitesse=Vecteur(0, 4)):
+    def __init__(self, masse=1, x=0, y=0, vitesse=Vecteur(0, 0)):
         self.influences = []
         self.masse = masse
         # Conds initiales
@@ -85,14 +81,21 @@ class Corps:
     def acceleration(self):
         acceleration = Vecteur(0, 0)
         for influence in self.influences:
-            if self.position.distance(influence.position) <= 3:  # OVERFLOW ACCELERATION
+            if self.position.distance(influence.position) < 0:  # OVERFLOW ACCELERATION
                 return Vecteur(0, 0)
-            f1 = G*influence.masse / ((self.position.distance(influence.position)) ** 2) * self.masse
+            f1 = G*influence.masse*self.masse/ ((self.position.distance(influence.position)) ** 2)
             f1 /= self.masse
-            angle = self.position.angle_between(influence.position)
-            print('ANGLE:', self.position)
-            x = f1 * (influence.position.x - self.position.x)
-            y = f1 * (influence.position.y - self.position.y)
+            x = influence.position.x - self.position.x
+            y = influence.position.y - self.position.y
+            print('  |rea:', self.position)
+            print('  |Inf:', influence.position)
+            print('  |', x, y)
+            angle = Vecteur(1, 0).angle_between(Vecteur(x, y))
+            print('  |P0:', self.position)
+            print('  |P1:', influence.position)
+            print('  |Angle:', angle*180/math.pi)
+            x = f1*math.cos(angle)
+            y = f1*math.sin(angle)
             print('ACCEL:', Vecteur(x, y))
             acceleration += Vecteur(x, y)
         return acceleration
@@ -103,9 +106,10 @@ class Corps:
         self.position += self.vitesse*H + acceleration0*((H**2)/2)
         acceleration1 = self.acceleration()
         self.vitesse += (acceleration0 + acceleration1)*(H/2)
-
-    def self_to_other_vector(self, other):
-        return self.position.angle_between(other.position)
+        # print('   |Vitesse:', self.vitesse)
+        # EULER
+        # self.vitesse += self.acceleration()
+        # self.position += self.vitesse
 
     def merge(self, other):
         self.masse += other.masse
@@ -114,15 +118,16 @@ class Corps:
 
 
 if __name__ == "__main__":
-    terre = Corps(x=100, y=200, masse=1000)
-    satellite = Corps(x=100, y=0, masse=1)
+    terre = Corps(x=-1, y=-1, masse=10e10)
+    satellite = Corps(x=1, y=0, masse=1)
     satellite.influences.append(terre)
+    terre.influences.append(satellite)
     print('Pos1:', satellite.position)
-    print('Vit1', satellite.vitesse)
-    for a in range(10):
-        satellite.update()
-    print('Pos2:', satellite.position.y)
-    print('Vit2', satellite.vitesse)
-    a  = Vecteur(0.01, 0.01)
-    b = Vecteur(1, 1)
-    print(a.angle_between(b)*180/math.pi)
+    print('Vit1:', satellite.vitesse)
+    print('Dist', satellite.position.distance(terre.position))
+    print("SATELLITE:")
+    print(satellite.acceleration())
+    print("TERRE:")
+    # terre.acceleration()
+    a = Vecteur(300, 300)
+    b = Vecteur(600, 300)
