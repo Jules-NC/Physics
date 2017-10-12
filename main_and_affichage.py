@@ -73,8 +73,8 @@ def main():
                 j += 1
             # print(a)
             print('i: ', i)
-            print('   |P:', p)
-            #print('   |V:', v)
+            # print('   |P:', p)
+            # print('   |V:', v)
             pygame.display.flip()
             time.sleep(0.0)
         c = modele.routine()

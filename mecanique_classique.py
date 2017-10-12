@@ -1,5 +1,5 @@
 import concurrent.futures
-# import random
+import random
 import math
 
 # CONSTANTES:
@@ -7,16 +7,18 @@ G = 6.674e-2  # Constante de gravitation de moi
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
-H = 0.1
+H = 0.01
 
 class Modele:
     def __init__(self):
         self.corps = []
-        c1 = Corps(x=300, y=300, masse=10000, vitesse=Vecteur(0, 0.5))
-        c2 = Corps(x=600, y=300, masse=10000, vitesse=Vecteur(0, -0.5))
+        # c1 = Corps(x=300, y=300, masse=10000, vitesse=Vecteur(0, 0.5))
+        # c2 = Corps(x=600, y=300, masse=10000, vitesse=Vecteur(0, -0.5))
 
-        self.corps.append(c1)
-        self.corps.append(c2)
+        # self.corps.append(c1)
+        # self.corps.append(c2)
+
+        self.corps = [Corps(x=random.randint(200, 700), y = random.randint(200, 500), masse=10000) for _ in range(10)]
         self.liaisons()
 
     def liaisons(self):
@@ -79,25 +81,16 @@ class Corps:
         self.position = Vecteur(x, y)
 
     def acceleration(self):
-        acceleration = Vecteur(0, 0)
+        acceleration = V_NUL
         for influence in self.influences:
-            if self.position.distance(influence.position) < 0:  # OVERFLOW ACCELERATION
-                return Vecteur(0, 0)
+            if self.position.distance(influence.position) < 8:  # OVERFLOW ACCELERATION
+                return V_NUL
             f1 = G*influence.masse*self.masse/ ((self.position.distance(influence.position)) ** 2)
             f1 /= self.masse
             x = influence.position.x - self.position.x
             y = influence.position.y - self.position.y
-            print('  |rea:', self.position)
-            print('  |Inf:', influence.position)
-            print('  |', x, y)
-            angle = Vecteur(1, 0).angle_between(Vecteur(x, y))
-            print('  |P0:', self.position)
-            print('  |P1:', influence.position)
-            print('  |Angle:', angle*180/math.pi)
-            x = f1*math.cos(angle)
-            y = f1*math.sin(angle)
-            print('ACCEL:', Vecteur(x, y))
-            acceleration += Vecteur(x, y)
+            angle = V_BASE.angle_between(Vecteur(x, y))
+            acceleration += Vecteur(f1*math.cos(angle), f1*math.sin(angle))
         return acceleration
 
     def update(self):
@@ -117,6 +110,8 @@ class Corps:
         other.position = Vecteur(10000, 0)
 
 
+V_BASE = Vecteur(1, 0)
+V_NUL = Vecteur(0, 0)
 if __name__ == "__main__":
     terre = Corps(x=-1, y=-1, masse=10e10)
     satellite = Corps(x=1, y=0, masse=1)
