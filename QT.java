@@ -19,7 +19,6 @@ public class QT{
     }
     
     private static boolean vide(QT q){ return q == null; }
-
     
     public QT inserer(double[] point){
         for(int i=0; i<4; i++){
