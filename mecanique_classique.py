@@ -3,22 +3,29 @@ import random
 import math
 
 # CONSTANTES:
-G = 6.674e-2  # Constante de gravitation de moi
+G = 6.674e-11  # Constante de gravitation de moi
 M_SOLEIL = 1.989e30
 M_TERRE = 5.972e24
 M_LUNE = 7.342e22
-H = 0.01
+D_TERLUNE = 384400e3  # metres
+D_TERSOL = 149.6e9  # metres
+V_TERSOL = 29.79e3  # m/s
+H = 1.
 
 class Modele:
     def __init__(self):
         self.corps = []
-        # c1 = Corps(x=300, y=300, masse=10000, vitesse=Vecteur(0, 0.5))
-        # c2 = Corps(x=600, y=300, masse=10000, vitesse=Vecteur(0, -0.5))
+        soleil = Corps(x=300, y=300, masse=M_SOLEIL)
+        soleil2 = Corps(x=-D_TERSOL*10, y=300, masse=M_SOLEIL, vitesse=Vecteur(0, V_TERSOL*0.13))
+        terre = Corps(x=D_TERSOL, y=300, masse=M_TERRE, vitesse=Vecteur(0, V_TERSOL))
+        lune = Corps(x=D_TERSOL+D_TERLUNE, y=300, masse=M_LUNE, vitesse=Vecteur(0, V_TERSOL + 1023))
 
-        # self.corps.append(c1)
-        # self.corps.append(c2)
+        self.corps.append(terre)
+        self.corps.append(lune)
+        self.corps.append(soleil)
+        self.corps.append(soleil2)
 
-        self.corps = [Corps(x=random.randint(200, 700), y = random.randint(200, 500), masse=10000) for _ in range(10)]
+        #self.corps = [Corps(x=random.randint(200, 700), y = random.randint(200, 500), masse=1000e9) for _ in range(3)]
         self.liaisons()
 
     def liaisons(self):
@@ -30,10 +37,10 @@ class Modele:
     def routine(self):
         # function = self.corps[0].update
         # corps = [corp for corp in self.corps]
-        # with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        # with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
         #     executor.map(function, corps)
         for corp in self.corps:
-            corp.update()
+             corp.update()
 
         for corp in self.corps:
             corp.update()
@@ -83,14 +90,13 @@ class Corps:
     def acceleration(self):
         acceleration = V_NUL
         for influence in self.influences:
-            if self.position.distance(influence.position) < 8:  # OVERFLOW ACCELERATION
+            if self.position.distance(influence.position) < 2:  # OVERFLOW ACCELERATION
                 return V_NUL
-            f1 = G*influence.masse*self.masse/ ((self.position.distance(influence.position)) ** 2)
-            f1 /= self.masse
-            x = influence.position.x - self.position.x
-            y = influence.position.y - self.position.y
-            angle = V_BASE.angle_between(Vecteur(x, y))
-            acceleration += Vecteur(f1*math.cos(angle), f1*math.sin(angle))
+            f1 = G*influence.masse
+            d3 = (influence.position.distance(self.position))**3
+            x = f1*(influence.position.x - self.position.x)/d3
+            y = f1 * (influence.position.y - self.position.y)/d3
+            acceleration += Vecteur(x, y)
         return acceleration
 
     def update(self):
@@ -109,6 +115,14 @@ class Corps:
         self.vitesse += other.vitesse
         other.position = Vecteur(10000, 0)
 
+
+def mod_h(i):
+    global H
+    H = H*i
+    H = abs(H)
+
+def get_h():
+    return H
 
 V_BASE = Vecteur(1, 0)
 V_NUL = Vecteur(0, 0)

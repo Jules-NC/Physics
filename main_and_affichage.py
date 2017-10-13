@@ -10,7 +10,7 @@ screen = pygame.display.set_mode((950, 950))
 pygame.display.set_caption('ORBITER 42: Space = See orbits | zqsd = moving | i,o = +,-')
 DONE = False  # Boucle de simulation
 DRAW = True  # Affichage des lignes
-HOMOTETIE = 1
+HOMOTETIE = 449.6e6
 PAS = 2.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
 MAX_I = 1e10
@@ -19,6 +19,7 @@ modele = Modele()
 REFERENT = modele.corps[0]
 COLORS = [tuple(random.randint(40, 255) for _ in range(3)) for i in range(len(modele.corps))]
 # COLORS = [(255, 255, 255), (0, 0, 0), (255, 0, 255)]
+COORDONEES = []
 def main():
     global DONE
     global DRAW
@@ -54,6 +55,12 @@ def main():
             HOMOTETIE /= 1.009
         if keys[pygame.K_o]:
             HOMOTETIE *= 1.009
+        if keys[pygame.K_p]:
+            mod_h(-H)
+        if keys[pygame.K_m]:
+            mod_h(1.003)
+        if keys[pygame.K_l]:
+            mod_h(1/1.003)
 
         DEPLACEMENT = PAS * HOMOTETIE
 
@@ -62,23 +69,42 @@ def main():
     # ===========================================================================================
 
         i += 1
-        if i%10 is 0:
+        if i%1 is 0:
             p = [[corp.position.x, corp.position.y] for corp in modele.corps]
+            COORDONEES.append(p)
             v = [[corp.vitesse.x, corp.vitesse.y] for corp in modele.corps]
             j = 0
             for c in p:
-                c[0] = int(c[0]/abs(HOMOTETIE))
-                c[1] = int(c[1]/abs(HOMOTETIE))
-                pygame.draw.circle(screen, COLORS[j], c, 1, 1)
+                cx = int(c[0]/abs(HOMOTETIE))
+                cy = int(c[1]/abs(HOMOTETIE))
+                pygame.draw.circle(screen, COLORS[j], (cx, cy), 1, 1)
                 j += 1
             # print(a)
-            print('i: ', i)
+            print('i: ', i,'PAS:', get_h())
             # print('   |P:', p)
             # print('   |V:', v)
             pygame.display.flip()
             time.sleep(0.0)
         c = modele.routine()
 
+def saveTimeFlow(really):
+    if not really:
+        print('TimeFlow NOT saved !')
+        return
+    with open('record3.csv', 'w') as f:
+        nbr_planetes = len(COORDONEES[0])
+        for i in range(nbr_planetes):
+            f.write('x' + str(i) + ',y' + str(i) + ',')
+        for coords_planetes in COORDONEES:
+            for coords_planete in coords_planetes:
+                f.write(str(coords_planete[0]) + ',' + str(coords_planete[1]) + ',')
+            f.write('\n')
+    print('TimeFlow saved !')
+
+
 if __name__ == '__main__':
     # with PyCallGraph(output=GraphvizOutput()):
     main()
+    saveTimeFlow(False)
+
+
