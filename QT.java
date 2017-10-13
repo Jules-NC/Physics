@@ -5,6 +5,17 @@ public class QT{
     private double[][] sB;
     private QT[] f;  // Taille: 4
     
+    public double[] getP(){return this.p;}
+    public void setP(double[] d){this.p = d;}
+    
+    public double[] getSB(int i){return this.sB[i];}
+    
+    public double[] getb(){return this.b;}
+    public void setb(double[] d){this.b = d;}
+    
+    public QT[] getF(){return this.f;}
+    public QT getFi(int i){return this.f[i];}
+    public void setFi(int i, QT q){this.f[i] = q;}
     
     public QT(double[] _p, double[] _b, QT[] _f){
         this.p = _p;
@@ -13,35 +24,32 @@ public class QT{
         this.f = _f;
     }
     
-    public static boolean vide(QT q){
+    private static boolean vide(QT q){
         return q == null;
     }
     
-    public static boolean feuille(QT qt){
+    private static boolean feuille(QT qt){
         return vide(qt.f[0]) && vide(qt.f[1]) && vide(qt.f[2]) && vide(qt.f[3]);
     }
     
-    public static QT inserer(double[] point, double[] boundaries, QT quadTree){
+    public QT inserer(double[] point, double[] boundaries){
         QT[] QTVide = {null, null, null, null} ;
-        if(vide(quadTree)){
-            return new QT(point, boundaries, QTVide);
-        }
-        int j = -1;  //Pour le débug
         for(int i=0; i<4; i++){
-            if(pointInRect(point, quadTree.sB[i])){
-                quadTree.f[i] = inserer(point, quadTree.sB[i], quadTree.f[i]);
+            if(vide(this.f[i]) && pointInRect(point, this.sB[i])){
+                this.f[i] = new QT(point, this.sB[i], QTVide);
             }
-            if(quadTree.p != null){
-                if(pointInRect(quadTree.p, quadTree.sB[i])){
-                    quadTree.f[i] = inserer(quadTree.p, quadTree.sB[i], quadTree.f[i]);
+            else if(pointInRect(point, this.sB[i])){
+                this.f[i].inserer(point, this.sB[i]);
+            }
+            if(this.p != null){
+                if(pointInRect(this.p, this.sB[i])){
+                    double[] point2 = this.p;                
+                    this.p = null;  //Sinon boucle infinie car inserer verrait p!=null
+                    this.inserer(point2, this.sB[i]);
                 }
             }
         }
-        quadTree.p = null;
-        if(j==-1){
-            System.out.print("CHEVAL:\n" + quadTree);
-        }
-        return quadTree;
+        return this;
     }    
     
     public static double[][] zones(double[] r){
@@ -80,8 +88,8 @@ public class QT{
             + !vide(this.f[3]) + ")";
         return res;
     }
-
-   public static void main(){
+    
+    public static void main(){
         QT[] QTNull = {null, null, null, null};
 
         double[] p1 = {1, 1};
@@ -90,7 +98,7 @@ public class QT{
         double[] zone = {0, 0, 5, 5};
         QT qt = new QT(p1, zone, QTNull);
         
-        qt = inserer(p2, zone, qt);
+        qt.inserer(p2, zone);
         //qt.inserer(p3, zone, qt);
         System.out.println("1:\n" + qt.f[2].f[1]);
         //qt.inserer(p3, zone, qt);
