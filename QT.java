@@ -1,5 +1,5 @@
 public class QT{
-    private double[] p;  // Taille = 2
+    private double[] p;  // Coordonées représentatives du point (Taille = 1 point)
     private double[] b;  // Domaine de valeurs du noeud (Taille = 1 rectangle)
     private double[][] sB;  // Sous domaines de valeurs reliés aux fils (Taille: 4 rectangles)
     private QT[] f;  // fils du noeud actuel (Taille: 4 quadTrees)
