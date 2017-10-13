@@ -5,15 +5,11 @@ public class QT{
     private QT[] f;  // fils du noeud actuel (Taille: 4 quadTrees)
     
     public double[] getP(){return this.p;}
-    public void setP(double[] d){this.p = d;}
-    
+    public void setP(double[] d){this.p = d;} 
     public double[] getSB(int i){return this.sB[i];}
-   
     public QT getFi(int i){return this.f[i];}
     public void setFi(int i, QT q){this.f[i] = q;}
-    
-    private static boolean vide(QT q){ return q == null; }
-    
+        
     public QT(double[] _p, double[] _b){
         QT[] QTVide = {null, null, null, null} ;
         this.p = _p;
@@ -21,6 +17,9 @@ public class QT{
         this.sB = zones(this.b);
         this.f = QTVide;  // Arbre vide au départ
     }
+    
+    private static boolean vide(QT q){ return q == null; }
+
     
     public QT inserer(double[] point){
         for(int i=0; i<4; i++){
