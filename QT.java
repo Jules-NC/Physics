@@ -1,8 +1,8 @@
 public class QT{
     private double[] p;  // Coordonées représentatives du point (Taille = 1 point)
     private double[] b;  // Domaine de valeurs du noeud (Taille = 1 rectangle)
+    private double masse; // Masse totale du noeud
     private double[] centreMasse ; // Centre de masse du noeud (Point x, y)
-    private double masse; // Masse totale
     private double[][] sB;  // Sous domaines de valeurs reliés aux fils (Taille: 4 rectangles)
     private QT[] f;  // fils du noeud actuel (Taille: 4 quadTrees)
     
@@ -14,17 +14,15 @@ public class QT{
     public double getMasse(){return this.masse;}
     public void addMasse(double d){this.masse += d;}
     public double[] getCentreMasse(){return this.centreMasse;}
-
-        
+   
     public QT(double[] _p, double[] _b, double _masse){
         QT[] QTVide = {null, null, null, null} ;
         this.p = _p;
-        this.b = _b;
-        this.sB = zones(this.b);
-        this.f = QTVide;  // Arbre vide au départ
-        
-        this.centreMasse = null;
+        this.b = _b;  // Domaine du QuadTree.
         this.masse = _masse;
+        this.centreMasse = null;  // ARBITRAIRE: Une feuile ne possède pas de "centre de masse".
+        this.sB = zones(this.b);  // Création des sous-domaines de valeurs de la feuille.
+        this.f = QTVide;  // Ce QT est une feuille.
     }
     
     private static boolean vide(QT q){ return q == null; }
@@ -57,22 +55,29 @@ public class QT{
     }
     
     public QT inserer(double[] point, double masse){
-        for(int i=0; i<4; i++){
-            if(vide(this.getFi(i)) && pointInRect(point, this.getSB(i)))
+        for(int i=0; i<4; i++){  // On itère sur les 4 sous emplacements.
+            // Si le point a pour destination un sous-arbre vide, on crée cet arbre.
+            if(vide(this.getFi(i)) && pointInRect(point, this.getSB(i))) 
                 this.setFi(i, new QT(point, this.getSB(i), masse));
+            // Si le point a pour destination un sous arbre non vide, on insère le point dans ce sous-arbre.
             else if(pointInRect(point, this.getSB(i)))
                 this.getFi(i).inserer(point, masse);
-            if(this.p != null){
+            // Si cet arbre contient une valeur => ETAIT une feuille, on insère cette valeur dans le sous-arbre correspondant, 
+            // puis on supprime cette valeur de l'arbre. Cet arbre devient ainsi un noeud.
+            if(this.p != null){  // (INCERTAIN) Sert à éviter un nullPointerException dans pointInRect.
                 if(pointInRect(this.getP(), this.getSB(i))){
                     double[] pointTampon = this.getP();                
-                    this.setP(null);  // Sinon boucle infinie car inserer verrait p!=null
-                    this.inserer(pointTampon, masse);
+                    this.setP(null);  // Sinon boucle infinie car inserer verrait p non null.
+                    this.inserer(pointTampon, this.getMasse());
                 }
             }
         }
+        // La valeur de l'arbre n'est pas forcément située dans le même sous domaine que celui du point. On doit donc parcourir
+        // les 4 sous-domaines, et donc retourner l'arbre ici.
         return this;
-    }    
+    } 
 
+    // Renvoie les 4 sous rectangles d'un rectangle (Séparation au milieu).
     private static double[][] zones(double[] r){
         // Zones (Arbitraire):
         // |0, 1|
@@ -88,9 +93,11 @@ public class QT{
     }
     
     private static boolean pointInRect(double[] p, double[] r){
-        // [x; x'[ et [y; y'[
+        // Choix ARBITRAIRE d'inclusion/exclusion
+        // [x; x'[ et [y; y'[ : sinon un point pourrait être présent dans plus d'un rectangle.
         return r[0]<=p[0] && p[0]<r[2] && r[1]<=p[1] && p[1]<r[3];
     }
+   
     //+----------------------+
     //|INUTILE A PARTIR D'ICI|
     //+----------------------+
@@ -116,8 +123,8 @@ public class QT{
         double[] zone = {0, 0, 16, 16};
         QT qt = new QT(p1, zone, 10);
         
-        qt.inserer(p2, 10);
-        qt.inserer(p3, 10);
+        qt.inserer(p2, 5);
+        //qt.inserer(p3, 10);
         qt.updateCentreMasse();
         System.out.println(qt);
     }
