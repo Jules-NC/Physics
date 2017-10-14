@@ -6,17 +6,16 @@ import random
 import time
 
 pygame.init()
-screen = pygame.display.set_mode((950, 950))
+screen = pygame.display.set_mode((950, 700))
 pygame.display.set_caption('ORBITER 42: Space = See orbits | zqsd = moving | i,o = +,-')
 DONE = False  # Boucle de simulation
-DRAW = True  # Affichage des lignes
+DRAW = False  # Affichage des lignes
 HOMOTETIE = 449.6e6
 PAS = 2.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
-MAX_I = 1e10
+MAX_I = 10000e6
 
 modele = Modele()
-REFERENT = modele.corps[0]
 COLORS = [tuple(random.randint(40, 255) for _ in range(3)) for i in range(len(modele.corps))]
 # COLORS = [(255, 255, 255), (0, 0, 0), (255, 0, 255)]
 COORDONEES = []
@@ -69,22 +68,17 @@ def main():
     # ===========================================================================================
 
         i += 1
-        if i%1 is 0:
+        if i%20 is 0:
             p = [[corp.position.x, corp.position.y] for corp in modele.corps]
             COORDONEES.append(p)
-            v = [[corp.vitesse.x, corp.vitesse.y] for corp in modele.corps]
             j = 0
             for c in p:
-                cx = int(c[0]/abs(HOMOTETIE))
-                cy = int(c[1]/abs(HOMOTETIE))
-                pygame.draw.circle(screen, COLORS[j], (cx, cy), 1, 1)
-                j += 1
-            # print(a)
+                 cx = int(c[0]/abs(HOMOTETIE))
+                 cy = int(c[1]/abs(HOMOTETIE))
+                 pygame.draw.circle(screen, COLORS[j], (cx, cy), 1, 1)
+                 j += 1
             print('i: ', i,'PAS:', get_h())
-            # print('   |P:', p)
-            # print('   |V:', v)
             pygame.display.flip()
-            time.sleep(0.0)
         c = modele.routine()
 
 def saveTimeFlow(really):
@@ -104,7 +98,9 @@ def saveTimeFlow(really):
 
 if __name__ == '__main__':
     # with PyCallGraph(output=GraphvizOutput()):
+    start_time = time.time()
     main()
+    print("Temps d'éxécution: ", round(time.time() - start_time, 5) , "s")
     saveTimeFlow(False)
 
 

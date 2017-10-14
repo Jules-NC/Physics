@@ -25,7 +25,9 @@ class Modele:
         self.corps.append(soleil)
         self.corps.append(soleil2)
 
-        #self.corps = [Corps(x=random.randint(200, 700), y = random.randint(200, 500), masse=1000e9) for _ in range(3)]
+        self.corps = [Corps(x=random.randint(0, D_TERLUNE), y = random.randint(0, D_TERLUNE),
+            masse=random.randint(M_LUNE, M_TERRE), vitesse=Vecteur(0., random.randint(-2000, 2000.)))
+            for _ in  range(8)]
         self.liaisons()
 
     def liaisons(self):
