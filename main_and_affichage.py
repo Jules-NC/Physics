@@ -1,5 +1,5 @@
-# from pycallgraph.output import GraphvizOutput
-# from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+from pycallgraph import PyCallGraph
 from mecanique_classique import *
 import pygame
 import random
@@ -11,9 +11,9 @@ pygame.display.set_caption('ORBITER 42: Space = See orbits | zqsd = moving | i,o
 DONE = False  # Boucle de simulation
 DRAW = False  # Affichage des lignes
 HOMOTETIE = 449.6e6
-PAS = 2.5  # DE combien je me déplace
+PAS = 0.5  # DE combien je me déplace
 DEPLACEMENT = 1  # Sera scalé avec l'homotétie. Ne sert à rien je crois
-MAX_I = 10000e6
+MAX_I = 1000
 
 modele = Modele()
 COLORS = [tuple(random.randint(40, 255) for _ in range(3)) for i in range(len(modele.corps))]
@@ -43,13 +43,13 @@ def main():
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_z]:
-            modele.move(Vecteur(0, -DEPLACEMENT))
+            modele.move(np.array([0, -DEPLACEMENT]))
         if keys[pygame.K_s]:
-            modele.move(Vecteur(0, DEPLACEMENT))
+            modele.move(np.array([0, DEPLACEMENT]))
         if keys[pygame.K_q]:
-            modele.move(Vecteur(-DEPLACEMENT, 0))
+            modele.move(np.array([-DEPLACEMENT, 0]))
         if keys[pygame.K_d]:
-            modele.move(Vecteur(DEPLACEMENT, 0))
+            modele.move(np.array([DEPLACEMENT, 0]))
         if keys[pygame.K_i]:
             HOMOTETIE /= 1.009
         if keys[pygame.K_o]:
@@ -68,8 +68,8 @@ def main():
     # ===========================================================================================
 
         i += 1
-        if i%20 is 0:
-            p = [[corp.position.x, corp.position.y] for corp in modele.corps]
+        if i%50 is 0:
+            p = [[corp.position[0], corp.position[1]] for corp in modele.corps]
             COORDONEES.append(p)
             j = 0
             for c in p:
@@ -79,7 +79,7 @@ def main():
                  j += 1
             print('i: ', i,'PAS:', get_h())
             pygame.display.flip()
-        c = modele.routine()
+            c = modele.routine()
 
 def saveTimeFlow(really):
     if not really:
@@ -97,9 +97,9 @@ def saveTimeFlow(really):
 
 
 if __name__ == '__main__':
-    # with PyCallGraph(output=GraphvizOutput()):
     start_time = time.time()
-    main()
+    with PyCallGraph(output=GraphvizOutput()):
+        main()
     print("Temps d'éxécution: ", round(time.time() - start_time, 5) , "s")
     saveTimeFlow(False)
 

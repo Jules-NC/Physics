@@ -1,4 +1,7 @@
+from pycallgraph.output import GraphvizOutput
+from pycallgraph import PyCallGraph
 import concurrent.futures
+import numpy as np
 import random
 import math
 
@@ -12,22 +15,23 @@ D_TERSOL = 149.6e9  # metres
 V_TERSOL = 29.79e3  # m/s
 H = 1.
 
+
 class Modele:
     def __init__(self):
         self.corps = []
         soleil = Corps(x=300, y=300, masse=M_SOLEIL)
-        soleil2 = Corps(x=-D_TERSOL*10, y=300, masse=M_SOLEIL, vitesse=Vecteur(0, V_TERSOL*0.13))
-        terre = Corps(x=D_TERSOL, y=300, masse=M_TERRE, vitesse=Vecteur(0, V_TERSOL))
-        lune = Corps(x=D_TERSOL+D_TERLUNE, y=300, masse=M_LUNE, vitesse=Vecteur(0, V_TERSOL + 1023))
+        soleil2 = Corps(x=-D_TERSOL*10, y=300, masse=M_SOLEIL, vitesse=np.array([0, V_TERSOL*0.13]))
+        terre = Corps(x=D_TERSOL, y=300, masse=M_TERRE, vitesse=np.array([0, V_TERSOL]))
+        lune = Corps(x=D_TERSOL+D_TERLUNE, y=300, masse=M_LUNE, vitesse=np.array([0, V_TERSOL + 1023]))
 
         self.corps.append(terre)
         self.corps.append(lune)
         self.corps.append(soleil)
         self.corps.append(soleil2)
 
-        self.corps = [Corps(x=random.randint(0, D_TERLUNE), y = random.randint(0, D_TERLUNE),
-            masse=random.randint(M_LUNE, M_TERRE), vitesse=Vecteur(0., random.randint(-2000, 2000.)))
-            for _ in  range(8)]
+        # self.corps = [Corps(x=random.randint(0, D_TERLUNE), y = random.randint(0, D_TERLUNE),
+        #     masse=random.randint(M_LUNE, M_TERRE), vitesse=np.array([0., random.randint(-2000, 2000.)]))
+        #               for _ in range(11)]
         self.liaisons()
 
     def liaisons(self):
@@ -42,80 +46,47 @@ class Modele:
         # with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
         #     executor.map(function, corps)
         for corp in self.corps:
-             corp.update()
-
-        for corp in self.corps:
             corp.update()
 
     def move(self, direction):
         for corp in self.corps:
-            corp.position += direction
-
-
-class Vecteur:  # 2D
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def angle_between(self, other):
-        return math.atan2(other.y, other.x) - math.atan2(self.y, self.x)
-
-    def distance(self, other):
-        distance = math.sqrt((other.x - self.x)**2+(other.y-self.y)**2)
-        return distance
-
-    def norme(self):
-        return math.sqrt(self.x**2+self.y**2)
-
-    def __add__(self, other):
-        x = other.x + self.x
-        y = other.y + self.y
-        return Vecteur(x, y)
-
-    def __mul__(self, other):
-        if type(other) is float:  # Mult by a scalar
-            return Vecteur(self.x*other, self.y*other)
-        return self.x*other.x+self.y*other.y  # For 0 with 2 normal vectors
-
-    def __str__(self):  # PRINT IN DEGREES
-        return str((str(round(self.x, 5)) + '.x', str(round(self.y, 5)) + '.y'))
+            np.add(corp.position, direction, out=corp.position, casting="unsafe")
+            #corp.position += direction
 
 
 class Corps:
-    def __init__(self, masse=1, x=0, y=0, vitesse=Vecteur(0, 0)):
+    def __init__(self, masse=1, x=0, y=0, vitesse=np.array([0, 0])):
         self.influences = []
         self.masse = masse
         # Conds initiales
         self.vitesse = vitesse
-        self.position = Vecteur(x, y)
+        self.position = np.array([x, y])
 
     def acceleration(self):
-        acceleration = V_NUL
+        acceleration = np.array([0, 0])
         for influence in self.influences:
-            if self.position.distance(influence.position) < 2:  # OVERFLOW ACCELERATION
-                return V_NUL
-            f1 = G*influence.masse
-            d3 = (influence.position.distance(self.position))**3
-            x = f1*(influence.position.x - self.position.x)/d3
-            y = f1 * (influence.position.y - self.position.y)/d3
-            acceleration += Vecteur(x, y)
+            distance = np.linalg.norm(np.subtract(self.position, influence.position))
+            if distance < 2:  # Prévient le npqr
+                return np.array([0., 0])
+            f1 = G*influence.masse  # TODO: PENSER A LA MASSE DU CORP (Ici annulée) ds le cas d'autres forces.
+            d3 = math.pow(distance, 3)
+            np.add(acceleration, np.multiply(np.subtract(influence.position, self.position), f1*1/d3),
+                   out=acceleration, casting="unsafe")
+            print(acceleration)
         return acceleration
 
     def update(self):
         # VIRIMACHIN
         acceleration0 = self.acceleration()
-        self.position += self.vitesse*H + acceleration0*((H**2)/2)
+        #self.position += self.vitesse*H + acceleration0*((H**2)/2)
+        np.add(self.position, np.add(self.vitesse*H, acceleration0*((H**2)/2)), out=self.position, casting="unsafe")
         acceleration1 = self.acceleration()
-        self.vitesse += (acceleration0 + acceleration1)*(H/2)
+        #self.vitesse += (acceleration0 + acceleration1)*(H/2)
+        np.add(self.vitesse, np.add(acceleration0, acceleration1*(H/2)), out=self.vitesse, casting="unsafe")
         # print('   |Vitesse:', self.vitesse)
         # EULER
         # self.vitesse += self.acceleration()
         # self.position += self.vitesse
-
-    def merge(self, other):
-        self.masse += other.masse
-        self.vitesse += other.vitesse
-        other.position = Vecteur(10000, 0)
 
 
 def mod_h(i):
@@ -123,11 +94,11 @@ def mod_h(i):
     H = H*i
     H = abs(H)
 
+
 def get_h():
     return H
 
-V_BASE = Vecteur(1, 0)
-V_NUL = Vecteur(0, 0)
+
 if __name__ == "__main__":
     terre = Corps(x=-1, y=-1, masse=10e10)
     satellite = Corps(x=1, y=0, masse=1)
@@ -135,10 +106,7 @@ if __name__ == "__main__":
     terre.influences.append(satellite)
     print('Pos1:', satellite.position)
     print('Vit1:', satellite.vitesse)
-    print('Dist', satellite.position.distance(terre.position))
     print("SATELLITE:")
     print(satellite.acceleration())
     print("TERRE:")
     # terre.acceleration()
-    a = Vecteur(300, 300)
-    b = Vecteur(600, 300)
